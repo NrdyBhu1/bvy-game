@@ -1,21 +1,43 @@
 use bevy::{
     prelude::*,
-    render::pass::ClearColor
+    render::pass::ClearColor,
+    window::prelude::Window,
+    window::WindowMode
 };
+
+struct Paddle{
+    speed: f32,
+    player: bool,
+}
+
+fn window_settings(
+    mut query: Query<&mut Window>,
+) {
+    for mut window in query.iter_mut() {
+        window.set_resizable(false);
+        window.set_cursor_lock_mode(true);
+        window.set_title("Bvy-Game".to_string());
+        window.set_mode(WindowMode::Fullscreen { use_size: false });
+        window.set_cursor_visibility(false);
+    }
+}
 
 fn main() 
 {
     App::build()
         .add_plugins(DefaultPlugins)
         .add_resource(ClearColor(Color::rgb(0.5, 0.5, 0.5)))
+        .add_startup_system(window_settings.system())
         .add_startup_system(setup.system())
         .add_system(world_system.system())
+        .add_system(paddle_movement.system())
         .run();
 }
 
 fn setup
 (
     commands: &mut Commands,
+    mut materials: ResMut<Assets<ColorMaterial>>,
     asset_server: Res<AssetServer>,
 ) {
     // add entities
@@ -23,6 +45,23 @@ fn setup
     // cameras
     .spawn(Camera2dBundle::default())
     .spawn(CameraUiBundle::default())
+
+    // paddle
+    .spawn(SpriteBundle {
+        material: materials.add(Color::rgb(0.5, 0.5, 1.0).into()),
+        transform: Transform::from_translation(Vec3::new(500.0, -15.0, 0.0)),
+        sprite: Sprite::new(Vec2::new(30.0, 120.0)),
+        ..Default::default()
+    })
+    .with(Paddle{ speed: 800.0, player: true })
+
+    .spawn(SpriteBundle {
+        material: materials.add(Color::rgb(0.5, 0.5, 1.0).into()),
+        transform: Transform::from_translation(Vec3::new(-500.0, -15.0, 0.0)),
+        sprite: Sprite::new(Vec2::new(30.0, 120.0)),
+        ..Default::default()
+    })
+    .with(Paddle{ speed: 800.0, player: false })
 
     // Text
     .spawn(TextBundle {
@@ -48,6 +87,32 @@ fn setup
 
         ..Default::default()
     });
+}
+
+fn paddle_movement(
+    time: Res<Time>,
+    keyboard_input: Res<Input<KeyCode>>,
+    mut query: Query<(&Paddle, &mut Transform)>,
+) {
+    for(paddle, mut transform) in query.iter_mut()
+    {
+        if paddle.player {
+            let mut direction = 0.0;
+
+            if keyboard_input.pressed(KeyCode::Up){
+                direction += 1.0;
+            } 
+            
+            if keyboard_input.pressed(KeyCode::Down) {
+                direction -= 1.0;
+            }
+
+            let translation = &mut transform.translation;
+
+            translation.y += time.delta_seconds() * direction * paddle.speed;
+
+        }
+    }
 }
 
 fn world_system(mut query: Query<&mut Text>)
