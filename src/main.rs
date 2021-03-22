@@ -5,23 +5,6 @@ use bevy::{
     window::WindowMode
 };
 
-struct Paddle{
-    speed: f32,
-    player: bool,
-}
-
-fn window_settings(
-    mut query: Query<&mut Window>,
-) {
-    for mut window in query.iter_mut() {
-        window.set_resizable(false);
-        window.set_cursor_lock_mode(true);
-        window.set_title("Bvy-Game".to_string());
-        window.set_mode(WindowMode::Fullscreen { use_size: false });
-        window.set_cursor_visibility(false);
-    }
-}
-
 fn main() 
 {
     App::build()
@@ -29,96 +12,100 @@ fn main()
         .add_resource(ClearColor(Color::rgb(0.5, 0.5, 0.5)))
         .add_startup_system(window_settings.system())
         .add_startup_system(setup.system())
-        .add_system(world_system.system())
-        .add_system(paddle_movement.system())
+        //.add_system(paddle_movement.system())
         .run();
+}
+
+fn window_settings(
+    mut query: Query<(&mut Window, &mut WindowDescriptor)>,
+) {
+    for (mut window, mut wind_desc) in query.iter_mut() {
+        window.set_resizable(false);
+        window.set_cursor_lock_mode(true);
+        window.set_title("Bvy-Game".to_string());
+        window.set_mode(WindowMode::Fullscreen { use_size: false });
+        window.set_cursor_visibility(false);
+        wind_desc.title = "Bvy-Game".to_string();
+    }
 }
 
 fn setup
 (
     commands: &mut Commands,
-    mut materials: ResMut<Assets<ColorMaterial>>,
-    asset_server: Res<AssetServer>,
+    //mut materials: ResMut<Assets<ColorMaterial>>,
+    //asset_server: Res<AssetServer>,
 ) {
     // add entities
     commands
     // cameras
     .spawn(Camera2dBundle::default())
-    .spawn(CameraUiBundle::default())
+    .spawn(CameraUiBundle::default());
 
     // paddle
-    .spawn(SpriteBundle {
-        material: materials.add(Color::rgb(0.5, 0.5, 1.0).into()),
-        transform: Transform::from_translation(Vec3::new(500.0, -15.0, 0.0)),
-        sprite: Sprite::new(Vec2::new(30.0, 120.0)),
-        ..Default::default()
-    })
-    .with(Paddle{ speed: 800.0, player: true })
+    //.spawn(SpriteBundle {
+        //material: materials.add(Color::rgb(0.5, 0.5, 1.0).into()),
+        //transform: Transform::from_translation(Vec3::new(500.0, -15.0, 0.0)),
+        //sprite: Sprite::new(Vec2::new(30.0, 120.0)),
+        //..Default::default()
+    //})
+    //.with(Paddle{ speed: 800.0, player: true })
 
-    .spawn(SpriteBundle {
-        material: materials.add(Color::rgb(0.5, 0.5, 1.0).into()),
-        transform: Transform::from_translation(Vec3::new(-500.0, -15.0, 0.0)),
-        sprite: Sprite::new(Vec2::new(30.0, 120.0)),
-        ..Default::default()
-    })
-    .with(Paddle{ speed: 800.0, player: false })
+    //.spawn(SpriteBundle {
+        //material: materials.add(Color::rgb(0.5, 0.5, 1.0).into()),
+        //transform: Transform::from_translation(Vec3::new(-500.0, -15.0, 0.0)),
+        //sprite: Sprite::new(Vec2::new(30.0, 120.0)),
+        //..Default::default()
+    //})
+    //.with(Paddle{ speed: 800.0, player: false });
 
     // Text
-    .spawn(TextBundle {
-        text: Text {
-            font: asset_server.load("fonts/Fura Code Light Nerd Font Complete.ttf"),
-            value: "Hello: ".to_string(),
-            style: TextStyle {
-                color: Color::rgb(0.9, 0.9, 0.9),
-                font_size: 40.0,
-                ..Default::default()
-            },
-            ..Default::default()
-        },
-        style: Style {
-            position_type: PositionType::Absolute,
-            position: Rect {
-                top: Val::Px(10.0),
-                left: Val::Px(10.0),
-                ..Default::default()
-            },
-            ..Default::default()
-        },
+    //.spawn(TextBundle {
+        //text: Text {
+            //font: asset_server.load("fonts/Fura Code Light Nerd Font Complete.ttf"),
+            //value: "Hello: ".to_string(),
+            //style: TextStyle {
+                //color: Color::rgb(0.9, 0.9, 0.9),
+                //font_size: 40.0,
+                //..Default::default()
+            //},
+            //..Default::default()
+        //},
+        //style: Style {
+            //position_type: PositionType::Absolute,
+            //position: Rect {
+                //top: Val::Px(10.0),
+                //left: Val::Px(10.0),
+                //..Default::default()
+            //},
+            //..Default::default()
+        //},
 
-        ..Default::default()
-    });
+        //..Default::default()
+    //});
 }
 
-fn paddle_movement(
-    time: Res<Time>,
-    keyboard_input: Res<Input<KeyCode>>,
-    mut query: Query<(&Paddle, &mut Transform)>,
-) {
-    for(paddle, mut transform) in query.iter_mut()
-    {
-        if paddle.player {
-            let mut direction = 0.0;
+//fn paddle_movement(
+    //time: Res<Time>,
+    //keyboard_input: Res<Input<KeyCode>>,
+    //mut query: Query<(&Paddle, &mut Transform)>,
+//) {
+    //for(paddle, mut transform) in query.iter_mut()
+    //{
+        //if paddle.player {
+            //let mut direction = 0.0;
 
-            if keyboard_input.pressed(KeyCode::Up){
-                direction += 1.0;
-            } 
+            //if keyboard_input.pressed(KeyCode::Up){
+                //direction += 1.0;
+            //} 
             
-            if keyboard_input.pressed(KeyCode::Down) {
-                direction -= 1.0;
-            }
+            //if keyboard_input.pressed(KeyCode::Down) {
+                //direction -= 1.0;
+            //}
 
-            let translation = &mut transform.translation;
+            //let translation = &mut transform.translation;
 
-            translation.y += time.delta_seconds() * direction * paddle.speed;
+            //translation.y += time.delta_seconds() * direction * paddle.speed;
 
-        }
-    }
-}
-
-fn world_system(mut query: Query<&mut Text>)
-{
-    for mut text in query.iter_mut()
-    {
-        text.value = format!("Hello: {}", "World");
-    }
-}
+        //}
+    //}
+//}
