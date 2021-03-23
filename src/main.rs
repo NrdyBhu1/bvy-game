@@ -17,9 +17,9 @@ fn main() {
 
 fn window_settings(mut windows: ResMut<Windows>) {
     let window = windows.get_primary_mut().unwrap();
-    // window.set_mode(WindowMode::Fullscreen { use_size: false });
-    // window.set_cursor_lock_mode(true);
-    window.set_resizable(false);
+    window.set_mode(WindowMode::BorderlessFullscreen);
+    window.set_cursor_visibility(true);
+    // window.set_resizable(false);
     window.set_title("Bvy-Game".to_string());
 }
 
