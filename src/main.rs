@@ -1,7 +1,7 @@
 use bevy::{
     prelude::*,
     render::pass::ClearColor,
-    // window::prelude::Window,
+    // sprite::collide_aabb::{collide, Collision},
     window::WindowMode,
 };
 
@@ -11,8 +11,14 @@ fn main() {
         .add_resource(ClearColor(Color::rgb(0.5, 0.5, 0.5)))
         .add_startup_system(window_settings.system())
         .add_startup_system(setup.system())
+        .add_system(player_movement.system())
         //.add_system(paddle_movement.system())
         .run();
+}
+
+struct Player {
+    speed: f32,
+    gravity: f32,
 }
 
 fn window_settings(mut windows: ResMut<Windows>) {
@@ -23,33 +29,59 @@ fn window_settings(mut windows: ResMut<Windows>) {
     window.set_title("Bvy-Game".to_string());
 }
 
+fn player_movement (
+    time: Res<Time>,
+    keyboard_input: Res<Input<KeyCode>>,
+    mut query: Query<(&Player, &mut Transform)>
+) {
+    for (
+        player, mut transform
+    ) in query.iter_mut() 
+    {
+        let mut direction = 0.0;
+        let gravity_speed = 15.0;
+
+        if keyboard_input.pressed(KeyCode::D) {
+            direction += 1.0;
+        }
+
+        if keyboard_input.pressed(KeyCode::A) {
+            direction -= 1.0;
+        }
+
+        // if keyboard_input.pressed(KeyCode::Space) {
+            
+        // }
+
+        // movement
+        let tranlation = &mut transform.translation;
+        tranlation.x += time.delta_seconds() * direction * player.speed;
+
+        // gravity
+        tranlation.y += time.delta_seconds() * gravity_speed * player.gravity;
+        tranlation.y = tranlation.y.min(10.0).max(-300.0);
+    }
+}
+
 fn setup(
     commands: &mut Commands,
-    //mut materials: ResMut<Assets<ColorMaterial>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
     //asset_server: Res<AssetServer>,
 ) {
     // add entities
     commands
         // cameras
         .spawn(Camera2dBundle::default())
-        .spawn(CameraUiBundle::default());
+        .spawn(CameraUiBundle::default())
 
-    // paddle
-    //.spawn(SpriteBundle {
-    //material: materials.add(Color::rgb(0.5, 0.5, 1.0).into()),
-    //transform: Transform::from_translation(Vec3::new(500.0, -15.0, 0.0)),
-    //sprite: Sprite::new(Vec2::new(30.0, 120.0)),
-    //..Default::default()
-    //})
-    //.with(Paddle{ speed: 800.0, player: true })
-
-    //.spawn(SpriteBundle {
-    //material: materials.add(Color::rgb(0.5, 0.5, 1.0).into()),
-    //transform: Transform::from_translation(Vec3::new(-500.0, -15.0, 0.0)),
-    //sprite: Sprite::new(Vec2::new(30.0, 120.0)),
-    //..Default::default()
-    //})
-    //.with(Paddle{ speed: 800.0, player: false });
+    // player
+    .spawn(SpriteBundle {
+    material: materials.add(Color::rgb(0.5, 0.5, 1.0).into()),
+    transform: Transform::from_translation(Vec3::new(500.0, -15.0, 0.0)),
+    sprite: Sprite::new(Vec2::new(30.0, 70.0)),
+    ..Default::default()
+    })
+    .with( Player { speed: 500.0, gravity: -9.81 } );
 
     // Text
     //.spawn(TextBundle {
@@ -76,29 +108,3 @@ fn setup(
     //..Default::default()
     //});
 }
-
-//fn paddle_movement(
-//time: Res<Time>,
-//keyboard_input: Res<Input<KeyCode>>,
-//mut query: Query<(&Paddle, &mut Transform)>,
-//) {
-//for(paddle, mut transform) in query.iter_mut()
-//{
-//if paddle.player {
-//let mut direction = 0.0;
-
-//if keyboard_input.pressed(KeyCode::Up){
-//direction += 1.0;
-//}
-
-//if keyboard_input.pressed(KeyCode::Down) {
-//direction -= 1.0;
-//}
-
-//let translation = &mut transform.translation;
-
-//translation.y += time.delta_seconds() * direction * paddle.speed;
-
-//}
-//}
-//}
